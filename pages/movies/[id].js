@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Container from '@/components/Container';
-import Header from '@/components/Header';
 import MovieReviewList from '@/components/MovieReviewList';
 import styles from '@/styles/Movie.module.css';
 import axios from '@/lib/axios';
@@ -44,8 +42,6 @@ export default function Movie() {
 
   return (
     <>
-      <Header />
-      <Container page>
         <div className={styles.header}>
           <img
             className={styles.poster}
@@ -94,7 +90,6 @@ export default function Movie() {
             <MovieReviewList movieReviews={movieReviews} />
           </section>
         </div>
-      </Container>
     </>
   );
 }
