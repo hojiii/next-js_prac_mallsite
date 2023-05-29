@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import MovieReviewList from '@/components/MovieReviewList';
 import Spinner from '@/components/Spinner';
 import styles from '@/styles/Movie.module.css';
@@ -17,55 +15,37 @@ const labels = {
   },
 };
 
-export async function getStaticPaths() {
-  const res = await axios.get('/movies/');
-  const movies = res.data.results ?? [];
-  const paths = movies.map((movie) => ({
-    params: { id: String(movie.id) },
-  }));
 
-  return {
-    paths,
-    fallback: true,
-  };
-}
+export async function getServerSideProps(context) {
+  const { id } = context.params;
 
-export async function getStaticProps(context) {
-  const id = context.params['id'];
-
+  let movie;
   try {
     const res = await axios.get(`/movies/${id}`);
-    const movie = res.data;
-
-    return {
-      props: {
-        movie,
-      },
-    };
+    movie = res.data;
   } catch {
     return {
       notFound: true,
-    };
+    }
   }
+
+  let movieReviews;
+  try {
+    const res = await axios.get(`/movie_reviews/?movie_id=${id}`);
+    movieReviews = res.data.results ?? [];
+  } catch {
+    movieReviews = [];
+  }
+
+  return {
+    props: {
+      movie,
+      movieReviews,
+    },
+  };
 }
 
-export default function Movie({ movie }) {
-  const [movieReviews, setMovieReviews] = useState([]);
-  const router = useRouter();
-  const id = router.query['id'];
-
-  async function loadMovieReviews(targetId) {
-    const res = await axios.get(`/movie_reviews/?movie_id=${targetId}`);
-    const nextMovieReviews = res.data.results ?? [];
-    setMovieReviews(nextMovieReviews);
-  }
-
-  useEffect(() => {
-    if (id) {
-      loadMovieReviews(id);
-    }
-  }, [id]);
-
+export default function Movie({ movie, movieReviews }) {
   if (!movie) {
     return (
       <div className={styles.loading}>
